@@ -44,13 +44,11 @@ class _HomeState extends State<Home> {
         ],
       ),
       body: Center(
-          child: Flexible(
-            child: isLoading
-              ? const CircularProgressIndicator()
-              : exercises.isEmpty
-                  ? const Text('No Exercises')
-                  : buildExercises(),
-        ),
+        child: isLoading
+            ? const CircularProgressIndicator()
+            : exercises.isEmpty
+                ? const Text('No Exercises')
+                : buildExercises(),
       ),
       floatingActionButton: FloatingActionButton(
         onPressed: () async {
@@ -63,29 +61,29 @@ class _HomeState extends State<Home> {
   }
 
   Widget buildExercises() => ListView.builder(
-    itemCount: exercises.length,
-    itemBuilder: ((context, index) {
-      final exercise = exercises[index];
-      return GestureDetector(
-        onTap: () {
-          Navigator.of(context).pushNamed(route.exercisePage,
-            arguments: [route.ExerciseArguments(exercise)]
-          );
-        },
-        child: Card(
-          child: ListTile(
-            title: Text(exercise.name),
-            trailing: Text(
-              "PR: ${exercise.pr}",
-              style: const TextStyle(
-                fontSize: 20
+        itemCount: exercises.length,
+        itemBuilder: ((context, index) {
+          final exercise = exercises[index];
+          return GestureDetector(
+            onTap: () {
+              Navigator.of(context).pushNamed(route.exercisePage,
+                  arguments: [route.ExerciseArguments(exercise)]);
+            },
+            child: Card(
+              child: ListTile(
+                title: Text(exercise.name),
+                trailing: Text(
+                  "PR: ${exercise.pr}",
+                  style: const TextStyle(fontSize: 20),
+                ),
+                subtitle: Text(
+                  exercise.category,
+                ),
+                shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(10)),
               ),
             ),
-            subtitle: Text(exercise.category,),
-            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-          ),
-        ),
+          );
+        }),
       );
-    }),
-  );
 }

@@ -30,7 +30,8 @@ class _EntryPageState extends State<EntryPage> {
   Future refreshSets() async {
     setState(() => isLoading = true);
 
-    List<setModel.Set> initialSetList = await GymNotesDatabase.instance.readEntrySets(widget.entryArguments.entry.entryId);
+    List<setModel.Set> initialSetList = await GymNotesDatabase.instance
+        .readEntrySets(widget.entryArguments.entry.entryId);
     sets = List.from(initialSetList.reversed);
 
     setState(() => isLoading = false);
@@ -39,61 +40,59 @@ class _EntryPageState extends State<EntryPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: Text(DateFormat.yMMMd().format(
-          widget.entryArguments.entry.date
-        ).toString()),
-      ),
-      body: Column(
-        children: [
-          const Text(
-            "Sets",
-            style: TextStyle(fontSize: 50),
-          ),
-          Flexible(
-            child: isLoading
-            ? const CircularProgressIndicator()
-            : sets.isEmpty
-                ? const Text('No Sets')
-                : buildSets(),
-          ),
-          const SizedBox(
-            height: 50,
-          ),
-          ElevatedButton(
-            onPressed: () async {
-              await deleteEntryAndAllUnder(db, widget.entryArguments.entry.entryId);
-              Navigator.pop(context);
-            },
-            child: const Text('Delete Entry'),
-            style: ButtonStyle(
-              backgroundColor: MaterialStateProperty.all(Colors.orange.shade800)
+        appBar: AppBar(
+          title: Text(DateFormat.yMMMd()
+              .format(widget.entryArguments.entry.date)
+              .toString()),
+        ),
+        body: Column(
+          children: [
+            const Text(
+              "Sets",
+              style: TextStyle(fontSize: 50),
             ),
-          ),
-        ],
-      )
-    );
+            isLoading
+                ? const CircularProgressIndicator()
+                : sets.isEmpty
+                    ? const Text('No Sets')
+                    : buildSets(),
+            const SizedBox(
+              height: 50,
+            ),
+            ElevatedButton(
+              onPressed: () async {
+                await deleteEntryAndAllUnder(
+                    db, widget.entryArguments.entry.entryId);
+                Navigator.pop(context);
+              },
+              child: const Text('Delete Entry'),
+              style: ButtonStyle(
+                  backgroundColor:
+                      MaterialStateProperty.all(Colors.orange.shade800)),
+            ),
+          ],
+        ));
   }
 
-    Widget buildSets() => ListView.builder(
-    reverse: true,
-    scrollDirection: Axis.vertical,
-    shrinkWrap: true,
-    itemCount: sets.length,
-    itemBuilder: ((context, index) {
-      final set = sets[index];
-      return GestureDetector(
-        onTap: () {
-        },
-        child: Card(
-          child: ListTile(
-            title: Text("Reps: ${set.reps} Weight: ${set.weight}"),
-            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-          ),
-        ),
+  Widget buildSets() => ListView.builder(
+        reverse: true,
+        scrollDirection: Axis.vertical,
+        shrinkWrap: true,
+        itemCount: sets.length,
+        itemBuilder: ((context, index) {
+          final set = sets[index];
+          return GestureDetector(
+            onTap: () {},
+            child: Card(
+              child: ListTile(
+                title: Text("Reps: ${set.reps} Weight: ${set.weight}"),
+                shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(10)),
+              ),
+            ),
+          );
+        }),
       );
-    }),
-  );
 
   Future<void> deleteEntryAndAllUnder(GymNotesDatabase db, int? entryId) async {
     List<setModel.Set> initialSetList = await db.readEntrySets(entryId);
