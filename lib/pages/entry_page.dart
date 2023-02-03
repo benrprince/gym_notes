@@ -61,9 +61,7 @@ class _EntryPageState extends State<EntryPage> {
             ),
             ElevatedButton(
               onPressed: () async {
-                await deleteEntryAndAllUnder(
-                    db, widget.entryArguments.entry.entryId);
-                Navigator.pop(context);
+                showAlertDialog(context);
               },
               child: const Text('Delete Entry'),
               style: ButtonStyle(
@@ -100,5 +98,40 @@ class _EntryPageState extends State<EntryPage> {
       await db.deleteSet(entrySet.setId);
     });
     await db.deleteEntry(entryId);
+  }
+
+  showAlertDialog(BuildContext context) {
+    // set up the buttons
+    Widget cancelButton = TextButton(
+      child: const Text("Cancel"),
+      onPressed: () {
+        Navigator.of(context, rootNavigator: true).pop();
+      },
+    );
+    Widget continueButton = TextButton(
+      child: const Text("Delete"),
+      onPressed: () async {
+        await deleteEntryAndAllUnder(db, widget.entryArguments.entry.entryId);
+        Navigator.of(context, rootNavigator: true).pop();
+        Navigator.pop(context);
+      },
+    );
+    // set up the AlertDialog
+    AlertDialog alert = AlertDialog(
+      title: const Text("Delete Exercise"),
+      content:
+          const Text("All data associated with this exercise will be deleted"),
+      actions: [
+        cancelButton,
+        continueButton,
+      ],
+    );
+    // show the dialog
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return alert;
+      },
+    );
   }
 }

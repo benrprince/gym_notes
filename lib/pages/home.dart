@@ -23,7 +23,9 @@ class _HomeState extends State<Home> {
   Future refreshExercises() async {
     setState(() => isLoading = true);
 
-    this.exercises = await GymNotesDatabase.instance.readAllExercises();
+    exercises = await GymNotesDatabase.instance.readAllExercises();
+    exercises
+        .sort((a, b) => a.name.toLowerCase().compareTo(b.name.toLowerCase()));
 
     setState(() => isLoading = false);
   }

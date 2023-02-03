@@ -8,7 +8,7 @@ import 'package:intl/intl.dart';
 
 class Exercise extends StatefulWidget {
   final ExerciseArguments exerciseArguments;
-  const Exercise({required this.exerciseArguments});
+  const Exercise({super.key, required this.exerciseArguments});
 
   @override
   _ExerciseState createState() => _ExerciseState();
@@ -29,7 +29,7 @@ class _ExerciseState extends State<Exercise> {
   Future refreshEntries() async {
     setState(() => isLoading = true);
 
-    this.entries = await db
+    entries = await db
         .readExerciseEntries(widget.exerciseArguments.exercise.exerciseId);
 
     setState(() => isLoading = false);
@@ -66,10 +66,10 @@ class _ExerciseState extends State<Exercise> {
             onPressed: () {
               showAlertDialog(context);
             },
-            child: const Text('Delete'),
             style: ButtonStyle(
                 backgroundColor:
                     MaterialStateProperty.all(Colors.orange.shade800)),
+            child: const Text('Delete'),
           ),
           const SizedBox(height: 50),
           const Center(
@@ -138,13 +138,13 @@ class _ExerciseState extends State<Exercise> {
   showAlertDialog(BuildContext context) {
     // set up the buttons
     Widget cancelButton = TextButton(
-      child: Text("Cancel"),
+      child: const Text("Cancel"),
       onPressed: () {
         Navigator.of(context, rootNavigator: true).pop();
       },
     );
     Widget continueButton = TextButton(
-      child: Text("Delete"),
+      child: const Text("Delete"),
       onPressed: () async {
         await deleteExerciseAndAllUnder(
             db, widget.exerciseArguments.exercise.exerciseId);
@@ -154,8 +154,9 @@ class _ExerciseState extends State<Exercise> {
     );
     // set up the AlertDialog
     AlertDialog alert = AlertDialog(
-      title: Text("Delete Exercise"),
-      content: Text("All data associated with this exercise will be deleted"),
+      title: const Text("Delete Exercise"),
+      content:
+          const Text("All data associated with this exercise will be deleted"),
       actions: [
         cancelButton,
         continueButton,

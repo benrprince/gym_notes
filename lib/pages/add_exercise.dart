@@ -30,7 +30,7 @@ class _AddExerciseState extends State<AddExercise> {
             TextFormField(
               decoration: const InputDecoration(labelText: "Exercise Name"),
               validator: (value) {
-                if(value == null || value.isEmpty) {
+                if (value == null || value.isEmpty) {
                   return 'Please Enter Exercise Name';
                 }
                 exerciseName = value;
@@ -38,14 +38,15 @@ class _AddExerciseState extends State<AddExercise> {
               },
             ),
             TextFormField(
-              decoration: const InputDecoration(labelText: "Current PR (Not Required)"),
+              decoration:
+                  const InputDecoration(labelText: "Current PR (Not Required)"),
               keyboardType: TextInputType.number,
               validator: (value) {
                 // TODO: Look Into why this condition doesn't work?
-                if(value != null || value!.isEmpty) {
+                if (value != null || value!.isEmpty) {
                   try {
                     weightPR = int.parse(value);
-                  } catch(e) {
+                  } catch (e) {
                     weightPR = 0;
                   }
                 }
@@ -57,7 +58,7 @@ class _AddExerciseState extends State<AddExercise> {
             DropdownButtonFormField(
               decoration: const InputDecoration(labelText: "Exercise Category"),
               validator: (value) {
-                if(value == null || value.isEmpty) {
+                if (value == null || value.isEmpty) {
                   return 'Please select a catergory';
                 }
                 category = value;
@@ -98,17 +99,16 @@ class _AddExerciseState extends State<AddExercise> {
                       const SnackBar(content: Text('Adding Exercise')),
                     );
                     Exercise exercise = Exercise(
-                      name: exerciseName,
-                      pr: weightPR,
-                      category: category
-                    );
+                        name: capitalize(exerciseName),
+                        pr: weightPR,
+                        category: category);
                     GymNotesDatabase.instance.createExercise(exercise);
                     Navigator.pop(context);
                   }
                 },
                 style: ButtonStyle(
-                  backgroundColor: MaterialStateProperty.all(Colors.greenAccent)
-                ),
+                    backgroundColor:
+                        MaterialStateProperty.all(Colors.greenAccent)),
                 child: Text(
                   'Submit',
                   style: TextStyle(color: Colors.grey.shade900),
@@ -119,5 +119,9 @@ class _AddExerciseState extends State<AddExercise> {
         ),
       ),
     );
+  }
+
+  String capitalize(String name) {
+    return "${name[0].toUpperCase()}${name.substring(1).toLowerCase()}";
   }
 }
