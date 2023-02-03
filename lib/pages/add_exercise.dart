@@ -121,6 +121,7 @@ class _AddExerciseState extends State<AddExercise> {
     );
   }
 
+  // Capitalize first letter
   String capitalize(String name) {
     return "${name[0].toUpperCase()}${name.substring(1).toLowerCase()}";
   }
