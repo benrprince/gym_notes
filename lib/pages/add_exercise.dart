@@ -83,7 +83,7 @@ class _AddExerciseState extends State<AddExercise> {
                   value: value,
                   child: Text(
                     value,
-                    style: TextStyle(fontSize: 20),
+                    style: const TextStyle(fontSize: 20),
                   ),
                 );
               }).toList(),
@@ -99,9 +99,7 @@ class _AddExerciseState extends State<AddExercise> {
                       const SnackBar(content: Text('Adding Exercise')),
                     );
                     Exercise exercise = Exercise(
-                        name: capitalize(exerciseName),
-                        pr: weightPR,
-                        category: category);
+                        name: exerciseName, pr: weightPR, category: category);
                     GymNotesDatabase.instance.createExercise(exercise);
                     Navigator.pop(context);
                   }
@@ -119,10 +117,5 @@ class _AddExerciseState extends State<AddExercise> {
         ),
       ),
     );
-  }
-
-  // Capitalize first letter
-  String capitalize(String name) {
-    return "${name[0].toUpperCase()}${name.substring(1).toLowerCase()}";
   }
 }

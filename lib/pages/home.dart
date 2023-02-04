@@ -12,18 +12,19 @@ class Home extends StatefulWidget {
 class _HomeState extends State<Home> {
   late List<Exercise> exercises;
   bool isLoading = false;
+  String? filterValue = "All";
 
   @override
   void initState() {
     super.initState();
 
-    refreshExercises();
+    refreshExercises(filterValue);
   }
 
-  Future refreshExercises() async {
+  Future refreshExercises(String? filterValue) async {
     setState(() => isLoading = true);
 
-    exercises = await GymNotesDatabase.instance.readAllExercises();
+    exercises = await GymNotesDatabase.instance.readExercises(filterValue!);
     exercises
         .sort((a, b) => a.name.toLowerCase().compareTo(b.name.toLowerCase()));
 
@@ -39,23 +40,78 @@ class _HomeState extends State<Home> {
           Padding(
             padding: const EdgeInsets.only(right: 20.0),
             child: GestureDetector(
-              onTap: () => refreshExercises(),
+              onTap: () => {},
+              child: const Icon(Icons.calendar_month_outlined),
+            ),
+          ),
+          Padding(
+            padding: const EdgeInsets.only(right: 20.0),
+            child: GestureDetector(
+              onTap: () => refreshExercises(filterValue),
               child: const Icon(Icons.refresh),
             ),
           ),
         ],
       ),
-      body: Center(
-        child: isLoading
-            ? const CircularProgressIndicator()
+      body: Column(children: [
+        DropdownButton(
+          value: filterValue,
+          items: const [
+            DropdownMenuItem<String>(
+              value: "All",
+              child: Text("All"),
+            ),
+            DropdownMenuItem<String>(
+              value: "Arms",
+              child: Text("Arms"),
+            ),
+            DropdownMenuItem<String>(
+              value: "Back",
+              child: Text("Back"),
+            ),
+            DropdownMenuItem<String>(
+              value: "Cardio",
+              child: Text("Cardio"),
+            ),
+            DropdownMenuItem<String>(
+              value: "Chest",
+              child: Text("Chest"),
+            ),
+            DropdownMenuItem<String>(
+              value: "Core",
+              child: Text("Core"),
+            ),
+            DropdownMenuItem<String>(
+              value: "Legs",
+              child: Text("Legs"),
+            ),
+            DropdownMenuItem<String>(
+              value: "Shoulders",
+              child: Text("Shoulders"),
+            ),
+            DropdownMenuItem<String>(
+              value: "Other",
+              child: Text("Other"),
+            )
+          ],
+          onChanged: (value) {
+            filterValue = value;
+            refreshExercises(filterValue);
+          },
+        ),
+        isLoading
+            ? const Center(child: CircularProgressIndicator())
             : exercises.isEmpty
-                ? const Text('No Exercises')
-                : buildExercises(),
-      ),
+                ? const Center(child: Text('No Exercises'))
+                : Expanded(child: buildExercises()),
+        const SizedBox(
+          height: 50,
+        )
+      ]),
       floatingActionButton: FloatingActionButton(
         onPressed: () async {
           await Navigator.pushNamed(context, route.addExercisePage);
-          refreshExercises();
+          refreshExercises(filterValue);
         },
         child: const Icon(Icons.add),
       ),
@@ -63,6 +119,7 @@ class _HomeState extends State<Home> {
   }
 
   Widget buildExercises() => ListView.builder(
+        shrinkWrap: true,
         itemCount: exercises.length,
         itemBuilder: ((context, index) {
           final exercise = exercises[index];

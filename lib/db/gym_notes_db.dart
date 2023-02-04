@@ -65,7 +65,7 @@ class GymNotesDatabase {
     ''');
   }
 
-    // Create Functions ****************************************
+  // Create Functions ****************************************
   Future<Exercise> createExercise(Exercise exercise) async {
     final db = await instance.database;
 
@@ -87,17 +87,14 @@ class GymNotesDatabase {
     return set.copy(setId: id);
   }
 
-
   // Read Functions ****************************************
   Future<Exercise> readExercise(int id) async {
     final db = await instance.database;
 
-    final maps = await db.query(
-      tableExercise,
-      columns: ExerciseFields.values,
-      where: '${ExerciseFields.exerciseId} = ?',
-      whereArgs: [id]
-    );
+    final maps = await db.query(tableExercise,
+        columns: ExerciseFields.values,
+        where: '${ExerciseFields.exerciseId} = ?',
+        whereArgs: [id]);
 
     if (maps.isNotEmpty) {
       return Exercise.fromJson(maps.first);
@@ -106,15 +103,28 @@ class GymNotesDatabase {
     }
   }
 
+  Future<List<Exercise>> readExercises(String category) async {
+    if (category == "All") {
+      return readAllExercises();
+    }
+
+    final db = await instance.database;
+
+    final maps = await db.query(tableExercise,
+        columns: ExerciseFields.values,
+        where: '${ExerciseFields.category} = ?',
+        whereArgs: [category]);
+
+    return maps.map((json) => Exercise.fromJson(json)).toList();
+  }
+
   Future<Entry> readEntry(int id) async {
     final db = await instance.database;
 
-    final maps = await db.query(
-      tableEntry,
-      columns: EntryFields.values,
-      where: '${EntryFields.entryId} = ?',
-      whereArgs: [id]
-    );
+    final maps = await db.query(tableEntry,
+        columns: EntryFields.values,
+        where: '${EntryFields.entryId} = ?',
+        whereArgs: [id]);
 
     if (maps.isNotEmpty) {
       return Entry.fromJson(maps.first);
@@ -126,12 +136,10 @@ class GymNotesDatabase {
   Future<List<Entry>> readExerciseEntries(int? id) async {
     final db = await instance.database;
 
-    final maps = await db.query(
-      tableEntry,
-      columns: EntryFields.values,
-      where: '${EntryFields.exerciseId} = ?',
-      whereArgs: [id]
-    );
+    final maps = await db.query(tableEntry,
+        columns: EntryFields.values,
+        where: '${EntryFields.exerciseId} = ?',
+        whereArgs: [id]);
 
     if (maps.isNotEmpty) {
       return maps.map((json) => Entry.fromJson(json)).toList();
@@ -143,12 +151,10 @@ class GymNotesDatabase {
   Future<setModel.Set> readSet(int id) async {
     final db = await instance.database;
 
-    final maps = await db.query(
-      setModel.tableSet,
-      columns: setModel.SetFields.values,
-      where: '${setModel.SetFields.setId} = ?',
-      whereArgs: [id]
-    );
+    final maps = await db.query(setModel.tableSet,
+        columns: setModel.SetFields.values,
+        where: '${setModel.SetFields.setId} = ?',
+        whereArgs: [id]);
 
     if (maps.isNotEmpty) {
       return setModel.Set.fromJson(maps.first);
@@ -156,16 +162,14 @@ class GymNotesDatabase {
       throw Exception('ID $id not found');
     }
   }
-  
+
   Future<List<setModel.Set>> readEntrySets(int? id) async {
     final db = await instance.database;
 
-    final maps = await db.query(
-      setModel.tableSet,
-      columns: setModel.SetFields.values,
-      where: '${setModel.SetFields.entryId} = ?',
-      whereArgs: [id]
-    );
+    final maps = await db.query(setModel.tableSet,
+        columns: setModel.SetFields.values,
+        where: '${setModel.SetFields.entryId} = ?',
+        whereArgs: [id]);
 
     if (maps.isNotEmpty) {
       return maps.map((json) => setModel.Set.fromJson(json)).toList();
@@ -174,11 +178,9 @@ class GymNotesDatabase {
     }
   }
 
-
   // ReadAll Functions ****************************************
   Future<List<Exercise>> readAllExercises() async {
     final db = await instance.database;
-    // TODO: Add order by alphabetical
     final result = await db.query(tableExercise);
 
     return result.map((json) => Exercise.fromJson(json)).toList();
@@ -186,7 +188,6 @@ class GymNotesDatabase {
 
   Future<List<Entry>> readAllEntries() async {
     final db = await instance.database;
-    // TODO: Add order by alphabetical
     final result = await db.query(tableEntry);
 
     return result.map((json) => Entry.fromJson(json)).toList();
@@ -194,7 +195,6 @@ class GymNotesDatabase {
 
   Future<List<setModel.Set>> readAllSets() async {
     final db = await instance.database;
-    // TODO: Add order by alphabetical
     final result = await db.query(setModel.tableSet);
 
     return result.map((json) => setModel.Set.fromJson(json)).toList();
@@ -204,50 +204,37 @@ class GymNotesDatabase {
   Future<int> updateExercise(Exercise exercise) async {
     final db = await instance.database;
 
-    return db.update(
-      tableExercise,
-      exercise.toJson(),
-      where: '${ExerciseFields.exerciseId} = ?',
-      whereArgs: [exercise.exerciseId]
-    );
+    return db.update(tableExercise, exercise.toJson(),
+        where: '${ExerciseFields.exerciseId} = ?',
+        whereArgs: [exercise.exerciseId]);
   }
 
   Future<int> updateExercisePR(Exercise exercise, int newPr) async {
     final db = await instance.database;
     Exercise updatedExercise = Exercise(
-      exerciseId: exercise.exerciseId, name: exercise.name, pr: newPr, category: exercise.category
-    );
+        exerciseId: exercise.exerciseId,
+        name: exercise.name,
+        pr: newPr,
+        category: exercise.category);
 
-    return db.update(
-      tableExercise,
-      updatedExercise.toJson(),
-      where: '${ExerciseFields.exerciseId} = ?',
-      whereArgs: [exercise.exerciseId]
-    );
+    return db.update(tableExercise, updatedExercise.toJson(),
+        where: '${ExerciseFields.exerciseId} = ?',
+        whereArgs: [exercise.exerciseId]);
   }
 
   Future<int> updateEntry(Entry entry) async {
     final db = await instance.database;
 
-    return db.update(
-      tableEntry,
-      entry.toJson(),
-      where: '${EntryFields.entryId} = ?',
-      whereArgs: [entry.entryId]
-    );
+    return db.update(tableEntry, entry.toJson(),
+        where: '${EntryFields.entryId} = ?', whereArgs: [entry.entryId]);
   }
 
   Future<int> updateSet(setModel.Set set) async {
     final db = await instance.database;
 
-    return db.update(
-      setModel.tableSet,
-      set.toJson(),
-      where: '${setModel.SetFields.setId} = ?',
-      whereArgs: [set.setId]
-    );
+    return db.update(setModel.tableSet, set.toJson(),
+        where: '${setModel.SetFields.setId} = ?', whereArgs: [set.setId]);
   }
-
 
   // Delete Functions ****************************************
   Future<int> deleteExercise(int? id) async {
@@ -278,9 +265,8 @@ class GymNotesDatabase {
       where: '${setModel.SetFields.setId} = ?',
       whereArgs: [id],
     );
-  }  
+  }
 
-  
   // Close DB ************************************
   Future close() async {
     final db = await instance.database;
