@@ -17,6 +17,7 @@ class Exercise extends StatefulWidget {
 class _ExerciseState extends State<Exercise> {
   GymNotesDatabase db = GymNotesDatabase.instance;
   late List<Entry> entries;
+  late Entry mostRecentEntry;
   bool isLoading = false;
 
   @override
@@ -31,6 +32,17 @@ class _ExerciseState extends State<Exercise> {
 
     entries = await db
         .readExerciseEntries(widget.exerciseArguments.exercise.exerciseId);
+
+    if (entries.isNotEmpty) {
+      mostRecentEntry = entries.last;
+    } else {
+      mostRecentEntry = Entry(
+          date: DateTime.now(),
+          exerciseId: 0,
+          sets: 0,
+          maxWeight: 0,
+          totalVolume: 0);
+    }
 
     setState(() => isLoading = false);
   }
@@ -56,7 +68,9 @@ class _ExerciseState extends State<Exercise> {
           ),
           const SizedBox(height: 40),
           Center(
-            child: Text("PR: ${widget.exerciseArguments.exercise.pr}",
+            child: Text(
+                prMetric(widget.exerciseArguments.exercise.prMetric,
+                    widget.exerciseArguments.exercise.pr!),
                 style: const TextStyle(fontSize: 40)),
           ),
           const SizedBox(
@@ -71,7 +85,7 @@ class _ExerciseState extends State<Exercise> {
                     MaterialStateProperty.all(Colors.orange.shade800)),
             child: const Text('Delete'),
           ),
-          const SizedBox(height: 50),
+          const SizedBox(height: 25),
           const Center(
             child: Text('Entries', style: TextStyle(fontSize: 20)),
           ),
@@ -79,7 +93,7 @@ class _ExerciseState extends State<Exercise> {
               ? const CircularProgressIndicator()
               : entries.isEmpty
                   ? const Text('No Entries')
-                  : buildEntries(),
+                  : Expanded(child: buildEntries()),
           const SizedBox(
             height: 100,
           )
@@ -88,7 +102,8 @@ class _ExerciseState extends State<Exercise> {
       floatingActionButton: FloatingActionButton(
         onPressed: () async {
           await Navigator.of(context).pushNamed(route.addEntryPage, arguments: [
-            route.ExerciseArguments(widget.exerciseArguments.exercise)
+            route.ExerciseArguments(widget.exerciseArguments.exercise),
+            mostRecentEntry
           ]);
           refreshEntries();
         },
@@ -106,14 +121,16 @@ class _ExerciseState extends State<Exercise> {
           final entry = entries[index];
           return GestureDetector(
             onTap: () {
-              Navigator.of(context).pushNamed(route.entryPage,
-                  arguments: [route.EntryArguments(entry)]);
+              Navigator.of(context).pushNamed(route.entryPage, arguments: [
+                route.EntryArguments(entry),
+                route.ExerciseArguments(widget.exerciseArguments.exercise)
+              ]);
             },
             child: Card(
               child: ListTile(
                 title: Text(DateFormat.yMMMd().format(entry.date).toString()),
-                trailing: Text(
-                    "Sets: ${entry.sets} | Max: ${entry.maxWeight} | Total Vol: ${entry.totalVolume}"),
+                trailing: Text(entryCard(
+                    widget.exerciseArguments.exercise.prMetric, entry)),
                 shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(10)),
               ),
@@ -133,6 +150,60 @@ class _ExerciseState extends State<Exercise> {
       await db.deleteEntry(entry.entryId);
     });
     await db.deleteExercise(exerciseId);
+  }
+
+  String prMetric(String prMetric, int pr) {
+    switch (prMetric) {
+      case "Weight":
+        {
+          return "PR: $pr lbs";
+        }
+      case "Reps":
+        {
+          return "PR: $pr reps";
+        }
+      case "Time":
+        {
+          int sec = pr % 60;
+          int min = (pr / 60).floor();
+          int hr = (pr / 3600).floor();
+          String hour = hr.toString().length <= 1 ? "0$hr" : "$min";
+          String minute = min.toString().length <= 1 ? "0$min" : "$min";
+          String second = sec.toString().length <= 1 ? "0$sec" : "$sec";
+          return "PR: $hour:$minute:$second";
+        }
+      default:
+        {
+          return "";
+        }
+    }
+  }
+
+  String entryCard(String prMetric, Entry entry) {
+    switch (prMetric) {
+      case "Weight":
+        {
+          return "Sets: ${entry.sets} | Max: ${entry.maxWeight} | Total Vol: ${entry.totalVolume}";
+        }
+      case "Reps":
+        {
+          return "Sets: ${entry.sets} | Total Vol: ${entry.totalVolume}";
+        }
+      case "Time":
+        {
+          int sec = entry.totalVolume! % 60;
+          int min = (entry.totalVolume! / 60).floor();
+          int hr = (entry.totalVolume! / 3600).floor();
+          String hour = hr.toString().length <= 1 ? "0$hr" : "$min";
+          String minute = min.toString().length <= 1 ? "0$min" : "$min";
+          String second = sec.toString().length <= 1 ? "0$sec" : "$sec";
+          return "PR: $hour:$minute:$second";
+        }
+      default:
+        {
+          return "";
+        }
+    }
   }
 
   showAlertDialog(BuildContext context) {

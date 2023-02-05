@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'routes/routes.dart' as route;
 
 void main() {
@@ -10,9 +11,12 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    SystemChrome.setPreferredOrientations([
+      DeviceOrientation.portraitUp,
+    ]);
     return MaterialApp(
       title: 'Startup Name Generator',
-      theme: ThemeData.dark(),      
+      theme: ThemeData.dark(),
       onGenerateRoute: route.controller,
       initialRoute: route.homePage,
     );

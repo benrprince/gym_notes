@@ -40,7 +40,8 @@ class GymNotesDatabase {
         ${ExerciseFields.exerciseId} $idType,
         ${ExerciseFields.name} $textType,
         ${ExerciseFields.pr} $integerType,
-        ${ExerciseFields.category} $textType
+        ${ExerciseFields.category} $textType,
+        ${ExerciseFields.prMetric} $textType
       )
     ''');
 
@@ -60,7 +61,8 @@ class GymNotesDatabase {
         ${setModel.SetFields.setId} $idType,
         ${setModel.SetFields.entryId} $integerType,
         ${setModel.SetFields.weight} $integerType,
-        ${setModel.SetFields.reps} $integerType
+        ${setModel.SetFields.reps} $integerType,
+        ${setModel.SetFields.time} $integerType
       )
     ''');
   }
@@ -215,7 +217,8 @@ class GymNotesDatabase {
         exerciseId: exercise.exerciseId,
         name: exercise.name,
         pr: newPr,
-        category: exercise.category);
+        category: exercise.category,
+        prMetric: exercise.prMetric);
 
     return db.update(tableExercise, updatedExercise.toJson(),
         where: '${ExerciseFields.exerciseId} = ?',

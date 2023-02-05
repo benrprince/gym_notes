@@ -132,7 +132,7 @@ class _HomeState extends State<Home> {
               child: ListTile(
                 title: Text(exercise.name),
                 trailing: Text(
-                  "PR: ${exercise.pr}",
+                  prMetric(exercise),
                   style: const TextStyle(fontSize: 20),
                 ),
                 subtitle: Text(
@@ -145,4 +145,31 @@ class _HomeState extends State<Home> {
           );
         }),
       );
+
+  String prMetric(Exercise exercise) {
+    switch (exercise.prMetric) {
+      case "Weight":
+        {
+          return "PR: ${exercise.pr} lbs";
+        }
+      case "Reps":
+        {
+          return "PR: ${exercise.pr} reps";
+        }
+      case "Time":
+        {
+          int sec = exercise.pr! % 60;
+          int min = (exercise.pr! / 60).floor();
+          int hr = (exercise.pr! / 3600).floor();
+          String hour = hr.toString().length <= 1 ? "0$hr" : "$min";
+          String minute = min.toString().length <= 1 ? "0$min" : "$min";
+          String second = sec.toString().length <= 1 ? "0$sec" : "$sec";
+          return "PR: $hour:$minute:$second";
+        }
+      default:
+        {
+          return "";
+        }
+    }
+  }
 }

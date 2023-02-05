@@ -13,7 +13,7 @@ class AddExercise extends StatefulWidget {
 class _AddExerciseState extends State<AddExercise> {
   final _formKey = GlobalKey<FormState>();
   String exerciseName = '';
-  int? weightPR = 0;
+  String prMetric = 'Weight';
   String category = 'Other';
 
   @override
@@ -28,6 +28,7 @@ class _AddExerciseState extends State<AddExercise> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             TextFormField(
+              textCapitalization: TextCapitalization.words,
               decoration: const InputDecoration(labelText: "Exercise Name"),
               validator: (value) {
                 if (value == null || value.isEmpty) {
@@ -36,24 +37,6 @@ class _AddExerciseState extends State<AddExercise> {
                 exerciseName = value;
                 return null;
               },
-            ),
-            TextFormField(
-              decoration:
-                  const InputDecoration(labelText: "Current PR (Not Required)"),
-              keyboardType: TextInputType.number,
-              validator: (value) {
-                // TODO: Look Into why this condition doesn't work?
-                if (value != null || value!.isEmpty) {
-                  try {
-                    weightPR = int.parse(value);
-                  } catch (e) {
-                    weightPR = 0;
-                  }
-                }
-              },
-              inputFormatters: <TextInputFormatter>[
-                FilteringTextInputFormatter.digitsOnly
-              ],
             ),
             DropdownButtonFormField(
               decoration: const InputDecoration(labelText: "Exercise Category"),
@@ -88,6 +71,31 @@ class _AddExerciseState extends State<AddExercise> {
                 );
               }).toList(),
             ),
+            DropdownButtonFormField(
+              decoration: const InputDecoration(labelText: "PR Metric"),
+              validator: (value) {
+                if (value == null || value.isEmpty) {
+                  return 'Please select a metric';
+                }
+                prMetric = value;
+                return null;
+              },
+              onChanged: (String? newValue) {
+                setState(() {
+                  prMetric = newValue!;
+                });
+              },
+              items: ['Weight', 'Reps', 'Time']
+                  .map<DropdownMenuItem<String>>((String value) {
+                return DropdownMenuItem<String>(
+                  value: value,
+                  child: Text(
+                    value,
+                    style: const TextStyle(fontSize: 20),
+                  ),
+                );
+              }).toList(),
+            ),
             Padding(
               padding: const EdgeInsets.symmetric(vertical: 16.0),
               child: ElevatedButton(
@@ -99,7 +107,10 @@ class _AddExerciseState extends State<AddExercise> {
                       const SnackBar(content: Text('Adding Exercise')),
                     );
                     Exercise exercise = Exercise(
-                        name: exerciseName, pr: weightPR, category: category);
+                        name: exerciseName,
+                        pr: 0,
+                        category: category,
+                        prMetric: prMetric);
                     GymNotesDatabase.instance.createExercise(exercise);
                     Navigator.pop(context);
                   }

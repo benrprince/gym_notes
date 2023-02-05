@@ -17,7 +17,7 @@ const String entryPage = 'entry';
 
 // Route Controller
 Route<dynamic> controller(RouteSettings settings) {
-  switch(settings.name) {
+  switch (settings.name) {
     case homePage:
       return MaterialPageRoute(builder: (context) => const Home());
     case addExercisePage:
@@ -25,20 +25,23 @@ Route<dynamic> controller(RouteSettings settings) {
     case addEntryPage:
       return MaterialPageRoute(builder: (BuildContext context) {
         List<dynamic> args = settings.arguments as List<dynamic>;
-        return AddEntry(exerciseArguments:args[0]);
+        return AddEntry(
+          exerciseArguments: args[0],
+          entry: args[1],
+        );
       });
     case entryPage:
       return MaterialPageRoute(builder: (BuildContext context) {
         List<dynamic> args = settings.arguments as List<dynamic>;
-        return EntryPage(entryArguments:args[0]);
+        return EntryPage(entryArguments: args[0], exerciseArguments: args[1]);
       });
     case exercisePage:
       return MaterialPageRoute(builder: (BuildContext context) {
         List<dynamic> args = settings.arguments as List<dynamic>;
-        return ExPage.Exercise(exerciseArguments:args[0]);
+        return ExPage.Exercise(exerciseArguments: args[0]);
       });
     default:
-      throw('Error: This route does not exist');
+      throw ('Error: This route does not exist');
   }
 }
 

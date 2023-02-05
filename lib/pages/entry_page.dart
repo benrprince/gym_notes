@@ -9,7 +9,11 @@ import 'package:intl/intl.dart';
 
 class EntryPage extends StatefulWidget {
   final route.EntryArguments entryArguments;
-  const EntryPage({required this.entryArguments});
+  final route.ExerciseArguments exerciseArguments;
+  const EntryPage(
+      {super.key,
+      required this.entryArguments,
+      required this.exerciseArguments});
 
   @override
   _EntryPageState createState() => _EntryPageState();
@@ -83,7 +87,8 @@ class _EntryPageState extends State<EntryPage> {
             onTap: () {},
             child: Card(
               child: ListTile(
-                title: Text("Reps: ${set.reps} Weight: ${set.weight}"),
+                title: Text(
+                    setText(widget.exerciseArguments.exercise.prMetric, set)),
                 shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(10)),
               ),
@@ -98,6 +103,33 @@ class _EntryPageState extends State<EntryPage> {
       await db.deleteSet(entrySet.setId);
     });
     await db.deleteEntry(entryId);
+  }
+
+  String setText(String prMetric, setModel.Set set) {
+    switch (prMetric) {
+      case "Weight":
+        {
+          return "Reps: ${set.reps} Weight: ${set.weight}";
+        }
+      case "Reps":
+        {
+          return "Reps: ${set.reps} Weight: ${set.weight}";
+        }
+      case "Time":
+        {
+          int sec = set.time! % 60;
+          int min = (set.time! / 60).floor();
+          int hr = (set.time! / 3600).floor();
+          String hour = hr.toString().length <= 1 ? "0$hr" : "$min";
+          String minute = min.toString().length <= 1 ? "0$min" : "$min";
+          String second = sec.toString().length <= 1 ? "0$sec" : "$sec";
+          return "Reps: ${set.reps} Time: $hour:$minute:$second";
+        }
+      default:
+        {
+          return "";
+        }
+    }
   }
 
   showAlertDialog(BuildContext context) {
