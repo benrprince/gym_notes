@@ -85,8 +85,11 @@ class _AddExerciseState extends State<AddExercise> {
                   prMetric = newValue!;
                 });
               },
-              items: ['Weight', 'Reps', 'Time']
-                  .map<DropdownMenuItem<String>>((String value) {
+              items: [
+                'Weight',
+                'Reps',
+                // 'Time'
+              ].map<DropdownMenuItem<String>>((String value) {
                 return DropdownMenuItem<String>(
                   value: value,
                   child: Text(

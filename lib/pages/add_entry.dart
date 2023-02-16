@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:gym_notes/db/gym_notes_db.dart';
 import 'package:gym_notes/model/entry.dart';
 import 'package:gym_notes/model/set.dart' as LiftingSet;
+import 'package:stop_watch_timer/stop_watch_timer.dart';
 
 import '../routes/routes.dart';
 
@@ -18,8 +20,15 @@ class AddEntry extends StatefulWidget {
 
 class _AddEntryState extends State<AddEntry> {
   final GlobalKey<FormState> _setFormKey = GlobalKey<FormState>();
+  final StopWatchTimer _stopWatchTimer = StopWatchTimer();
+  final bool _isHours = true;
   bool timerFlag = false;
+  bool timerPressed = false;
   bool repsFlag = false;
+  String hours = "00";
+  String minutes = "00";
+  String seconds = "00";
+  String mSecs = "00";
   int maxWeight = 0;
   int maxTime = 0;
   int time = 0;
@@ -32,6 +41,14 @@ class _AddEntryState extends State<AddEntry> {
 
   List<SetVariables> setList = [];
 
+  List<StopWatchTimer> timerList = [];
+
+  @override
+  void dispose() {
+    super.dispose();
+    _stopWatchTimer.dispose();
+  }
+
   @override
   void initState() {
     super.initState();
@@ -43,6 +60,7 @@ class _AddEntryState extends State<AddEntry> {
     refreshSets();
     setList = List<SetVariables>.empty(growable: true);
     setList.add(SetVariables(0, 0, 0));
+    timerList.add(StopWatchTimer());
   }
 
   Future refreshSets() async {
@@ -66,6 +84,8 @@ class _AddEntryState extends State<AddEntry> {
         appBar: AppBar(
           title: const Text('Add Entry'),
         ),
+        // bottomNavigationBar: Visibility(
+        //     visible: timerPressed, child: BottomAppBar(child: stopWatch())),
         body: SingleChildScrollView(
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.center,
@@ -124,7 +144,7 @@ class _AddEntryState extends State<AddEntry> {
               ),
               const SizedBox(
                 height: 50,
-              )
+              ),
             ],
           ),
         ));
@@ -165,15 +185,14 @@ class _AddEntryState extends State<AddEntry> {
         itemCount: previousSets.length,
         itemBuilder: ((context, index) {
           final set = previousSets[index];
-          return GestureDetector(
-            onTap: () {},
-            child: Padding(
-                padding: EdgeInsets.all(5),
-                child: Text(
-                    cardText(widget.exerciseArguments.exercise.prMetric, set),
-                    style:
-                        TextStyle(fontSize: 14, fontWeight: FontWeight.bold))),
-          );
+          return Padding(
+              padding: const EdgeInsets.only(left: 15),
+              child: Padding(
+                  padding: const EdgeInsets.all(5),
+                  child: Text(
+                      cardText(widget.exerciseArguments.exercise.prMetric, set),
+                      style: const TextStyle(
+                          fontSize: 14, fontWeight: FontWeight.bold))));
         }),
       );
 
@@ -226,7 +245,7 @@ class _AddEntryState extends State<AddEntry> {
               },
               separatorBuilder: (context, index) => const Divider(),
               itemCount: setList.length),
-        )
+        ),
       ],
     );
   }
@@ -265,28 +284,138 @@ class _AddEntryState extends State<AddEntry> {
           ),
           timerFlag
               ? SizedBox(
-                  height: 50,
-                  width: 75,
-                  child: TextFormField(
-                    keyboardType: TextInputType.number,
-                    decoration: const InputDecoration(labelText: "Time"),
-                    validator: (value) {
-                      if (value == null || value.isEmpty) {
-                        return 'Please Enter Time in Seconds';
-                      }
-                      time = int.parse(value);
-                      if (time > maxTime) {
-                        maxTime = time;
-                      }
-                      totalVolume += time * reps;
-                      setVariables.setTime(time);
-                      return null;
-                    },
-                    onSaved: (value) {
-                      setList[index] = setVariables;
-                    },
-                  ),
+                  width: 115,
+                  child: Center(
+                      child: Padding(
+                          padding: EdgeInsets.only(top: 20),
+                          child: StreamBuilder<int>(
+                              stream: _stopWatchTimer.rawTime,
+                              initialData: _stopWatchTimer.rawTime.value,
+                              builder: ((context, snapshot) {
+                                final value = snapshot.data;
+                                final displayTime =
+                                    StopWatchTimer.getDisplayTime(value!,
+                                        hours: _isHours);
+                                return Text(
+                                  displayTime,
+                                  style: const TextStyle(fontSize: 18),
+                                );
+                              })))),
+                  // child: Row(
+                  //   children: [
+                  // Expanded(
+                  //     child: TextFormField(
+                  //   inputFormatters: [
+                  //     LengthLimitingTextInputFormatter(2),
+                  //   ],
+                  //   controller: TextEditingController(text: hours),
+                  //   keyboardType: TextInputType.number,
+                  //   validator: (value) {
+                  //     if (value == null || value.isEmpty) {
+                  //       return 'Please Enter Time in Seconds';
+                  //     }
+                  //     // time = int.parse(value);
+                  //     // if (time > maxTime) {
+                  //     //   maxTime = time;
+                  //     // }
+                  //     // totalVolume += time * reps;
+                  //     // setVariables.setTime(time);
+                  //     return null;
+                  //   },
+                  //   onSaved: (newValue) {},
+                  // )),
+                  // Text(":"),
+                  // Expanded(
+                  //     child: TextFormField(
+                  //   inputFormatters: [
+                  //     LengthLimitingTextInputFormatter(2),
+                  //   ],
+                  //   initialValue: minutes,
+                  //   keyboardType: TextInputType.number,
+                  //   validator: (value) {
+                  //     if (value == null || value.isEmpty) {
+                  //       return 'Please Enter Time in Seconds';
+                  //     }
+                  //     // time = int.parse(value);
+                  //     // if (time > maxTime) {
+                  //     //   maxTime = time;
+                  //     // }
+                  //     // totalVolume += time * reps;
+                  //     // setVariables.setTime(time);
+                  //     return null;
+                  //   },
+                  //   onSaved: (newValue) {},
+                  // )),
+                  // Text(":"),
+                  // Expanded(
+                  //     child: TextFormField(
+                  //   inputFormatters: [
+                  //     LengthLimitingTextInputFormatter(2),
+                  //   ],
+                  //   initialValue: seconds,
+                  //   keyboardType: TextInputType.number,
+                  //   validator: (value) {
+                  //     if (value == null || value.isEmpty) {
+                  //       return 'Please Enter Time in Seconds';
+                  //     }
+                  //     // time = int.parse(value);
+                  //     // if (time > maxTime) {
+                  //     //   maxTime = time;
+                  //     // }
+                  //     // totalVolume += time * reps;
+                  //     // setVariables.setTime(time);
+                  //     return null;
+                  //   },
+                  //   onSaved: (newValue) {},
+                  // )),
+                  // Text("."),
+                  // Expanded(
+                  //     child: TextFormField(
+                  //   inputFormatters: [
+                  //     LengthLimitingTextInputFormatter(2),
+                  //   ],
+                  //   initialValue: mSecs,
+                  //   keyboardType: TextInputType.number,
+                  //   validator: (value) {
+                  //     if (value == null || value.isEmpty) {
+                  //       return 'Please Enter Time in Seconds';
+                  //     }
+                  //     // time = int.parse(value);
+                  //     // if (time > maxTime) {
+                  //     //   maxTime = time;
+                  //     // }
+                  //     // totalVolume += time * reps;
+                  //     // setVariables.setTime(time);
+                  //     return null;
+                  //   },
+                  //   onSaved: (newValue) {},
+                  // )),
+                  //   ],
+                  // ),
                 )
+              // ? SizedBox(
+              //     height: 50,
+              //     width: 75,
+              //     child: TextFormField(
+              //       keyboardType: TextInputType.number,
+              //       decoration: const InputDecoration(labelText: "Time"),
+              //       validator: (value) {
+              //         if (value == null || value.isEmpty) {
+              //           return 'Please Enter Time in Seconds';
+              //         }
+              //         time = int.parse(value);
+              //         if (time > maxTime) {
+              //           maxTime = time;
+              //         }
+              //         totalVolume += time * reps;
+              //         setVariables.setTime(time);
+              //         return null;
+              //       },
+              //       onSaved: (value) {
+              //         setList[index] = setVariables;
+              //       },
+              //     ),
+              //   )
               : SizedBox(
                   height: 50,
                   width: 75,
@@ -312,6 +441,29 @@ class _AddEntryState extends State<AddEntry> {
                     },
                   ),
                 ),
+          Visibility(
+            visible: timerFlag,
+            child: SizedBox(
+              width: 50,
+              height: 30,
+              child: IconButton(
+                icon: const Icon(
+                  Icons.timer_outlined,
+                  color: Colors.greenAccent,
+                ),
+                onPressed: () {
+                  setState(() {
+                    if (timerPressed) {
+                      _stopWatchTimer.onResetTimer();
+                      timerPressed = false;
+                    } else {
+                      timerPressed = true;
+                    }
+                  });
+                },
+              ),
+            ),
+          ),
           Visibility(
             visible: index == setList.length - 1,
             child: SizedBox(
@@ -352,6 +504,7 @@ class _AddEntryState extends State<AddEntry> {
   void addSetControl() {
     setState(() {
       setList.add(SetVariables(0, 0, 0));
+      timerList.add(StopWatchTimer());
     });
   }
 
@@ -370,6 +523,125 @@ class _AddEntryState extends State<AddEntry> {
       return true;
     }
     return false;
+  }
+
+  Widget stopWatch() {
+    return SizedBox(
+        height: 250,
+        width: 400,
+        child: Column(
+          children: [
+            const SizedBox(
+              height: 60,
+            ),
+            StreamBuilder<int>(
+                stream: _stopWatchTimer.rawTime,
+                initialData: _stopWatchTimer.rawTime.value,
+                builder: ((context, snapshot) {
+                  final value = snapshot.data;
+                  final displayTime =
+                      StopWatchTimer.getDisplayTime(value!, hours: _isHours);
+                  return Text(
+                    displayTime,
+                    style: const TextStyle(fontSize: 40),
+                  );
+                })),
+            const SizedBox(height: 10),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                ElevatedButton(
+                    onPressed: (() {
+                      _stopWatchTimer.onStartTimer();
+                    }),
+                    style: ButtonStyle(
+                        backgroundColor:
+                            MaterialStateProperty.all(Colors.greenAccent),
+                        shape:
+                            MaterialStateProperty.all<RoundedRectangleBorder>(
+                                RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(20),
+                                    side: const BorderSide(
+                                        color: Colors.greenAccent)))),
+                    child: Text(
+                      "Start",
+                      style: TextStyle(color: Colors.grey.shade900),
+                    )),
+                const SizedBox(
+                  width: 52,
+                ),
+                ElevatedButton(
+                    onPressed: (() {
+                      _stopWatchTimer.onStopTimer();
+                    }),
+                    style: ButtonStyle(
+                        backgroundColor:
+                            MaterialStateProperty.all(Colors.orange.shade900),
+                        shape:
+                            MaterialStateProperty.all<RoundedRectangleBorder>(
+                                RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(20),
+                                    side: BorderSide(
+                                        color: Colors.orange.shade900)))),
+                    child: Text(
+                      "Stop",
+                      style: TextStyle(color: Colors.grey.shade900),
+                    )),
+                const SizedBox(
+                  width: 50,
+                ),
+                ElevatedButton(
+                    onPressed: (() {
+                      _stopWatchTimer.onResetTimer();
+                    }),
+                    style: ButtonStyle(
+                        backgroundColor: MaterialStateProperty.all(Colors.grey),
+                        shape:
+                            MaterialStateProperty.all<RoundedRectangleBorder>(
+                                RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(20),
+                                    side:
+                                        const BorderSide(color: Colors.grey)))),
+                    child: Text(
+                      "Reset",
+                      style: TextStyle(color: Colors.grey.shade900),
+                    ))
+              ],
+            ),
+            const SizedBox(
+              height: 20,
+            ),
+            ElevatedButton(
+                onPressed: (() {
+                  setState(() {
+                    hours = StopWatchTimer.getDisplayTimeHours(
+                            _stopWatchTimer.rawTime.value)
+                        .toString();
+                    minutes = StopWatchTimer.getDisplayTimeMinute(
+                            _stopWatchTimer.rawTime.value)
+                        .toString();
+                    seconds = StopWatchTimer.getDisplayTimeSecond(
+                            _stopWatchTimer.rawTime.value)
+                        .toString();
+                    mSecs = StopWatchTimer.getDisplayTimeMillisecond(
+                            _stopWatchTimer.rawTime.value)
+                        .toString();
+                  });
+                }),
+                style: ButtonStyle(
+                    backgroundColor:
+                        MaterialStateProperty.all(Colors.greenAccent),
+                    shape: MaterialStateProperty.all<RoundedRectangleBorder>(
+                        RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(20),
+                            side:
+                                const BorderSide(color: Colors.greenAccent)))),
+                child: Text(
+                  "Record",
+                  style: TextStyle(color: Colors.grey.shade900),
+                ))
+          ],
+        ));
   }
 }
 
