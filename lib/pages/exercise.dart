@@ -19,6 +19,8 @@ class _ExerciseState extends State<Exercise> {
   GymNotesDatabase db = GymNotesDatabase.instance;
   late List<Entry> entries;
   late Entry mostRecentEntry;
+  late List<setModel.Set> previousSets;
+  bool previous = false;
   bool isLoading = false;
 
   @override
@@ -37,6 +39,7 @@ class _ExerciseState extends State<Exercise> {
     entries = entries.reversed.toList();
 
     if (entries.isNotEmpty) {
+      previous = true;
       mostRecentEntry = entries.first;
     } else {
       mostRecentEntry = Entry(
@@ -47,34 +50,44 @@ class _ExerciseState extends State<Exercise> {
           totalVolume: 0);
     }
 
+    List<setModel.Set> initialSetList =
+          await GymNotesDatabase.instance.readEntrySets(mostRecentEntry.entryId);
+      previousSets = List.from(initialSetList.reversed);
+
     setState(() => isLoading = false);
   }
 
   @override
   Widget build(BuildContext context) {
+    double screenWidth = MediaQuery.of(context).size.width;
     return Scaffold(
       appBar: AppBar(
         title: const Text('Exercise'),
       ),
       body: Column(
         children: [
-          const SizedBox(height: 40),
+          Row(
+            children: [
+              Column(
+                children: [
+                  SizedBox(width: screenWidth/2,),
+                  const SizedBox(height: 40),
           Center(
               child: Text(widget.exerciseArguments.exercise.name,
-                  style: const TextStyle(fontSize: 50))),
+                  style: const TextStyle(fontSize: 25))),
           const SizedBox(
             height: 10,
           ),
           Center(
             child: Text(widget.exerciseArguments.exercise.category,
-                style: const TextStyle(fontSize: 20)),
+                style: const TextStyle(fontSize: 15)),
           ),
           const SizedBox(height: 40),
           Center(
             child: Text(
                 prMetric(widget.exerciseArguments.exercise.prMetric,
                     widget.exerciseArguments.exercise.pr!),
-                style: const TextStyle(fontSize: 40)),
+                style: const TextStyle(fontSize: 25)),
           ),
           const SizedBox(
             height: 20,
@@ -87,6 +100,38 @@ class _ExerciseState extends State<Exercise> {
                 backgroundColor:
                     MaterialStateProperty.all(Colors.orange.shade800)),
             child: const Text('Delete'),
+          ),
+                ],
+              ),
+              Column(
+                children: [
+                  SizedBox(width: screenWidth/2),
+                  const SizedBox(height: 40,),
+                  SingleChildScrollView(
+            padding: EdgeInsets.all(10),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisAlignment: MainAxisAlignment.start,
+              children: [
+                const Padding(
+                    padding: EdgeInsets.all(10),
+                    child: Text("Previous Entry",
+                        textAlign: TextAlign.left,
+                        style: TextStyle(
+                            fontSize: 20, fontWeight: FontWeight.bold))),
+                isLoading
+                    ? const CircularProgressIndicator()
+                    : !previous
+                        ? const SizedBox(
+                            height: 150,
+                            child: Center(child: Text("No Previous Entry")),
+                          )
+                        : Expanded(child: buildSets()),
+              ],
+            ))
+                ],
+              ),
+            ],
           ),
           const SizedBox(height: 25),
           const Center(
@@ -113,6 +158,51 @@ class _ExerciseState extends State<Exercise> {
         child: const Icon(Icons.add),
       ),
     );
+  }
+
+  Widget buildSets() => ListView.builder(
+      reverse: true,
+      scrollDirection: Axis.vertical,
+      shrinkWrap: true,
+      itemCount: previousSets.length,
+      itemBuilder: ((context, index) {
+        final set = previousSets[index];
+        return Padding(
+            padding: const EdgeInsets.only(left: 15),
+            child: Padding(
+                padding: const EdgeInsets.all(5),
+                child: Text(
+                    cardText(widget.exerciseArguments.exercise.prMetric, set),
+                    style: const TextStyle(
+                        fontSize: 14, fontWeight: FontWeight.bold))));
+      }),
+  );
+  
+  String cardText(String prMetric, setModel.Set set) {
+    switch (prMetric) {
+      case "Weight":
+        {
+          return "Reps: ${set.reps} Weight: ${set.weight}";
+        }
+      case "Reps":
+        {
+          return "Reps: ${set.reps} Weight: ${set.weight}";
+        }
+      case "Time":
+        {
+          int sec = set.time! % 60;
+          int min = (set.time! / 60).floor();
+          int hr = (set.time! / 3600).floor();
+          String hour = hr.toString().length <= 1 ? "0$hr" : "$min";
+          String minute = min.toString().length <= 1 ? "0$min" : "$min";
+          String second = sec.toString().length <= 1 ? "0$sec" : "$sec";
+          return "Reps: ${set.reps} Time: $hour:$minute:$second";
+        }
+      default:
+        {
+          return "";
+        }
+    }
   }
 
   Widget buildEntries() => ListView.builder(
