@@ -11,6 +11,7 @@ class Exercise extends StatefulWidget {
   const Exercise({super.key, required this.exerciseArguments});
 
   @override
+  // ignore: library_private_types_in_public_api
   _ExerciseState createState() => _ExerciseState();
 }
 
@@ -32,9 +33,11 @@ class _ExerciseState extends State<Exercise> {
 
     entries = await db
         .readExerciseEntries(widget.exerciseArguments.exercise.exerciseId);
+    
+    entries = entries.reversed.toList();
 
     if (entries.isNotEmpty) {
-      mostRecentEntry = entries.last;
+      mostRecentEntry = entries.first;
     } else {
       mostRecentEntry = Entry(
           date: DateTime.now(),
@@ -113,7 +116,7 @@ class _ExerciseState extends State<Exercise> {
   }
 
   Widget buildEntries() => ListView.builder(
-        reverse: true,
+        // reverse: true,
         scrollDirection: Axis.vertical,
         shrinkWrap: true,
         itemCount: entries.length,

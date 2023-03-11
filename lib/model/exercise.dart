@@ -1,4 +1,4 @@
-final String tableExercise = 'exercise';
+const String tableExercise = 'exercise';
 
 class ExerciseFields {
   static final List<String> values = [exerciseId, name, pr, category, prMetric];
